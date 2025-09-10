@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Autoplay audio</title>
+<style>
+  /* минималистичная кнопка — видна ТОЛЬКО если автозапуск блокирован */
+  body{margin:0;background:transparent}
+  #hint {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.36);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    color:#fff;
+    cursor:pointer;
+    transition:opacity .25s ease, transform .18s ease;
+    opacity:0;
+    pointer-events:none;
+    z-index:9999;
+  }
+  #hint.show{opacity:1;pointer-events:auto}
+  #hint:active{transform:scale(.96)}
+</style>
+</head>
+<body>
+  <!-- Если хотите использовать внешний URL (Google Drive) — замените src на ссылку -->
+  <audio id="bg" loop preload="auto">
+    <source src="bg.mp3" type="audio/mpeg">
+    Ваш браузер не поддерживает аудио.
+  </audio>
+
+  <div id="hint" title="Включить звук">►</div>
+
+  <script>
+    const audio = document.getElementById('bg');
+    const hint = document.getElementById('hint');
+    audio.volume = 1.0;
+
+    function tryPlay(){
+      const p = audio.play();
+      if (p !== undefined) {
+        p.then(()=> {
+          // Автовоспроизведение сработало — кнопка не нужна
+          hint.classList.remove('show');
+        }).catch((err)=>{
+          // Браузер заблокировал автозапуск — показать минимальную кнопку
+          hint.classList.add('show');
+          console.warn('Autoplay blocked:', err);
+        });
+      } else {
+        // В старых браузерах промиса нет — просто скрываем кнопку
+        hint.classList.remove('show');
+      }
+    }
+
+    window.addEventListener('load', tryPlay);
+
+    // нажатие на мини-кнопку включает звук и прячет кнопку
+    hint.addEventListener('click', ()=>{
+      audio.play().then(()=>{ hint.classList.remove('show'); }).catch(()=>{});
+    });
+  </script>
+</body>
+</html>
